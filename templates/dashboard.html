@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+
+{% block page_title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="dashboard-grid">
+    <!-- Stats Cards -->
+    <div class="stats-card card-employees animate-slide-up">
+        <div class="stats-icon">
+            <i class="fas fa-users"></i>
+        </div>
+        <div class="stats-info">
+            <h3>Total Employees</h3>
+            <p class="stats-value" id="total-employees">{{ total_employees }}</p>
+        </div>
+    </div>
+
+    <div class="stats-card card-inventory animate-slide-up" style="animation-delay: 0.1s;">
+        <div class="stats-icon">
+            <i class="fas fa-boxes"></i>
+        </div>
+        <div class="stats-info">
+            <h3>Total Inventory</h3>
+            <p class="stats-value" id="total-inventory">{{ total_inventory }}</p>
+        </div>
+    </div>
+
+    <div class="stats-card card-alerts animate-slide-up" style="animation-delay: 0.2s;">
+        <div class="stats-icon">
+            <i class="fas fa-exclamation-triangle"></i>
+        </div>
+        <div class="stats-info">
+            <h3>Low Stock Items</h3>
+            <p class="stats-value" id="low-stock">{{ low_stock_items|length }}</p>
+        </div>
+    </div>
+
+    <!-- Recent Employees -->
+    <div class="card animate-slide-up" style="animation-delay: 0.3s;">
+        <div class="card-header">
+            <h3>Recent Employees</h3>
+            <a href="{{ url_for('employee_list') }}" class="btn-view-all">View All</a>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Position</th>
+                            <th>Department</th>
+                            <th>Hire Date</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for employee in employees[-5:] %}
+                        <tr>
+                            <td>{{ employee.first_name }} {{ employee.last_name }}</td>
+                            <td>{{ employee.position }}</td>
+                            <td>{{ employee.department }}</td>
+                            <td>{{ employee.hire_date.strftime('%Y-%m-%d') }}</td>
+                            <td>
+                                <span class="status-badge status-active">Active</span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Inventory Status -->
+    <div class="card animate-slide-up" style="animation-delay: 0.4s;">
+        <div class="card-header">
+            <h3>Inventory Status</h3>
+            <a href="{{ url_for('inventory_list') }}" class="btn-view-all">View All</a>
+        </div>
+        <div class="card-body">
+            <div class="inventory-summary">
+                {% for item in inventory if item.quantity < item.min_stock %}
+                <div class="inventory-item-warning">
+                    <div class="item-info">
+                        <h4>{{ item.name }}</h4>
+                        <p>Current: {{ item.quantity }} | Min: {{ item.min_stock }}</p>
+                    </div>
+                    <div class="item-action">
+                        <button class="btn-restock" data-id="{{ item.id }}">Restock</button>
+                    </div>
+                </div>
+                {% else %}
+                <div class="no-alerts">
+                    <i class="fas fa-check-circle"></i>
+                    <p>All inventory items are sufficiently stocked</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block scripts %}
+<script>
+    // Real-time updates for dashboard stats
+    function updateDashboardStats() {
+        fetch('/api/dashboard-stats')
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('total-employees').textContent = data.total_employees;
+                document.getElementById('total-inventory').textContent = data.total_inventory;
+                document.getElementById('low-stock').textContent = data.low_stock_count;
+            });
+    }
+    
+    // Update every 30 seconds
+    setInterval(updateDashboardStats, 30000);
+    
+    // Restock button functionality
+    document.querySelectorAll('.btn-restock').forEach(button => {
+        button.addEventListener('click', function() {
+            const itemId = this.getAttribute('data-id');
+            alert(`Restocking initiated for item ID: ${itemId}`);
+            // In real app, you would make an API call here
+        });
+    });
+</script>
+{% endblock %}
+{% endblock %}

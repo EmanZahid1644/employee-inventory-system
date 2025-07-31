@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block page_title %}Employee Management{% endblock %}
+
+{% block content %}
+<div class="card animate-fade-in">
+    <div class="card-header">
+        <h3>Employee List</h3>
+        <a href="{{ url_for('add_employee') }}" class="btn-primary">
+            <i class="fas fa-plus"></i> Add Employee
+        </a>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Position</th>
+                        <th>Department</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for employee in employees %}
+                    <tr class="animate-fade-in" style="animation-delay: {{ loop.index * 0.05 }}s;">
+                        <td>{{ employee.id }}</td>
+                        <td>{{ employee.first_name }} {{ employee.last_name }}</td>
+                        <td>{{ employee.email }}</td>
+                        <td>{{ employee.position }}</td>
+                        <td>{{ employee.department }}</td>
+                        <td>
+                            <span class="status-badge {% if employee.is_active %}status-active{% else %}status-inactive{% endif %}">
+                                {% if employee.is_active %}Active{% else %}Inactive{% endif %}
+                            </span>
+                        </td>
+                        <td class="actions">
+                            <a href="{{ url_for('edit_employee', id=employee.id) }}" class="btn-edit">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <form action="{{ url_for('delete_employee', id=employee.id) }}" method="POST" class="d-inline">
+                                <button type="submit" class="btn-delete" onclick="return confirm('Are you sure you want to deactivate this employee?')">
+                                    <i class="fas fa-trash-alt"></i>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
